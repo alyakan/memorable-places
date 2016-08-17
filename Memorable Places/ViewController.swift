@@ -34,39 +34,33 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             let latitude = Double(places[activePlace]["lat"]!)!
             let longitude = Double(places[activePlace]["lon"]!)!
             
-            let annotation = MKPointAnnotation()
+            addAnnotationToMap(latitude, longitude: longitude, title: places[activePlace]["name"]!)
             
-            annotation.coordinate.longitude = longitude
-            annotation.coordinate.latitude = latitude
+            let annotationLocation = CLLocation(latitude: latitude, longitude: longitude)
             
-            annotation.title = places[activePlace]["name"]
-            
-            let latDelta: CLLocationDegrees = 0.01
-            
-            let lonDelta: CLLocationDegrees = 0.01
-            
-            let span: MKCoordinateSpan = MKCoordinateSpanMake(latDelta, lonDelta)
-            
-            let location: CLLocationCoordinate2D = CLLocationCoordinate2DMake(latitude, longitude)
-            
-            let region: MKCoordinateRegion = MKCoordinateRegionMake(location, span)
-            
-            self.map.setRegion(region, animated: true)
-            
-            map.addAnnotation(annotation)
-            
-            map.showsScale = true
-            
-            
+            getLocationOnMap(annotationLocation)
+   
         }
-        
-        
         
         let uilgpr = UILongPressGestureRecognizer(target: self, action: #selector(ViewController.saveLocation(_:)))
         
         uilgpr.minimumPressDuration = 1
         
         map.addGestureRecognizer(uilgpr)
+        
+    }
+    
+    func addAnnotationToMap(latitude: Double, longitude: Double, title: String) {
+        
+        let annotation = MKPointAnnotation()
+        
+        annotation.coordinate.longitude = longitude
+        annotation.coordinate.latitude = latitude
+        annotation.title = title
+        
+        map.addAnnotation(annotation)
+        
+        map.showsScale = true
         
     }
 
@@ -77,7 +71,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        getUserLocation(locations[0])
+        getLocationOnMap(locations[0])
         
         print("Location Updated")
     
@@ -118,13 +112,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                     }
                     let locationDesc: String = "\(subThoroughfare) \(thoroughfare) \(pm.country!)"
                     
-                    let annotation = MKPointAnnotation()
-                    
-                    annotation.coordinate = newCoordinate
-                    
-                    self.map.addAnnotation(annotation)
-                    
-                    annotation.title = locationDesc
+                    self.addAnnotationToMap(newCoordinate.latitude, longitude: newCoordinate.longitude, title: locationDesc)
                     
                     places.append(["name": locationDesc, "lat": "\(newCoordinate.latitude)", "lon": "\(newCoordinate.longitude)"])
                     NSUserDefaults.standardUserDefaults().setObject(places, forKey: "places")
@@ -139,13 +127,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         
     }
     
-    func getUserLocation(loc: CLLocation) {
+    func getLocationOnMap(loc: CLLocation) {
         
-        let userLocation: CLLocation = loc
+        let lat = loc.coordinate.latitude
         
-        let lat = userLocation.coordinate.latitude
-        
-        let lon = userLocation.coordinate.longitude
+        let lon = loc.coordinate.longitude
         
         let latDelta: CLLocationDegrees = 0.01
         
@@ -166,7 +152,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         locationManager.startUpdatingLocation()
         
     }
-    
 
 }
 
